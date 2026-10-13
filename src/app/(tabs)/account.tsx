@@ -1,5 +1,5 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSession } from '../../lib/session';
@@ -7,9 +7,11 @@ import { supabase } from '../../lib/supabase';
 import { Avatar, Button, IconCircle, Input, average, colors, s, t } from '../../lib/ui';
 
 export default function Account() {
+  const router = useRouter();
   const { session } = useSession();
   const user = session?.user;
   const [name, setName] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState('');
   const [stats, setStats] = useState({ groups: 0, ratings: 0, avg: 0 });
@@ -18,11 +20,12 @@ export default function Account() {
     if (!user) return;
     (async () => {
       const [p, g, r] = await Promise.all([
-        supabase.from('profiles').select('display_name').eq('id', user.id).single(),
+        supabase.from('profiles').select('display_name, avatar_url').eq('id', user.id).single(),
         supabase.from('group_members').select('group_id', { count: 'exact', head: true }).eq('user_id', user.id),
         supabase.from('ratings').select('stars').eq('user_id', user.id),
       ]);
       setName(p.data?.display_name ?? '');
+      setAvatarUrl(p.data?.avatar_url ?? null);
       const stars = (r.data ?? []).map((x) => x.stars);
       setStats({ groups: g.count ?? 0, ratings: stars.length, avg: average(stars) });
     })();
@@ -44,7 +47,16 @@ export default function Account() {
     <ScrollView style={s.screen} contentContainerStyle={s.content}>
       <Text style={[t.overline, { marginBottom: 12 }]}>Mein Profil</Text>
       <View style={[s.card, s.row, { justifyContent: 'flex-start', gap: 16 }]}>
-        <Avatar name={name || '?'} size={72} />
+        <Pressable onPress={() => router.push('/account/avatar')} style={{ position: 'relative' }}>
+          <Avatar name={name || '?'} size={72} uri={avatarUrl} />
+          <View style={{
+            position: 'absolute', bottom: -2, right: -2, width: 24, height: 24, borderRadius: 12,
+            backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center',
+            borderWidth: 2, borderColor: colors.card,
+          }}>
+            <MaterialIcons name="photo-camera" size={12} color={colors.onPrimary} />
+          </View>
+        </Pressable>
         <View style={{ flex: 1 }}>
           <Text style={t.h2}>{name}</Text>
           <Text style={t.bodyMuted}>{user?.email}</Text>

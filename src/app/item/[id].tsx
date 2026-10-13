@@ -25,7 +25,7 @@ export default function ItemDetail() {
     if (!it) return;
     setItem(it as unknown as ItemWithGroup);
     const [r, m] = await Promise.all([
-      supabase.from('ratings').select('*, profiles(display_name)').eq('item_id', id).order('created_at', { ascending: false }),
+      supabase.from('ratings').select('*, profiles(display_name, avatar_url)').eq('item_id', id).order('created_at', { ascending: false }),
       supabase.from('group_members').select('user_id').eq('group_id', it.group_id).eq('user_id', me).maybeSingle(),
     ]);
     const list = (r.data as Rating[]) ?? [];
@@ -127,7 +127,7 @@ export default function ItemDetail() {
           return (
             <View key={r.id} style={s.card}>
               <View style={[s.row, { gap: 12 }]}>
-                <Avatar name={name} size={44} />
+                <Avatar name={name} size={44} uri={r.profiles?.avatar_url} />
                 <View style={{ flex: 1 }}>
                   <View style={[s.row, { justifyContent: 'flex-start', gap: 6 }]}>
                     <Text style={t.h3}>{name}</Text>

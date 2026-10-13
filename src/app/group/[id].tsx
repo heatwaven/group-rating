@@ -8,7 +8,7 @@ import { Avatar, Badge, Button, EmojiBox, IconCircle, Pill, ScorePill, SectionHe
 
 type Row = {
   id: string; name: string; created_at: string;
-  ratings: { stars: number; comment: string | null; created_at: string; profiles: { display_name: string } | null }[];
+  ratings: { stars: number; comment: string | null; created_at: string; profiles: { display_name: string; avatar_url: string | null } | null }[];
 };
 type Sort = 'best' | 'newest';
 
@@ -28,7 +28,7 @@ export default function GroupDetail() {
     const [g, m, i] = await Promise.all([
       supabase.from('groups').select('*, group_members(count)').eq('id', id).single(),
       supabase.from('group_members').select('user_id').eq('group_id', id).eq('user_id', u.user!.id).maybeSingle(),
-      supabase.from('items').select('id, name, created_at, ratings(stars, comment, created_at, profiles(display_name))').eq('group_id', id),
+      supabase.from('items').select('id, name, created_at, ratings(stars, comment, created_at, profiles(display_name, avatar_url))').eq('group_id', id),
     ]);
     setGroup(g.data as GroupWithCount);
     setIsMember(!!m.data);
@@ -139,7 +139,7 @@ export default function GroupDetail() {
         ListEmptyComponent={<Text style={t.bodyMuted}>Noch keine Einträge. {isMember ? 'Füge unten den ersten hinzu!' : ''}</Text>}
         renderItem={({ item, index }) => {
           const latest = [...item.ratings].filter((r) => r.comment).sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
-          const names = item.ratings.map((r) => r.profiles?.display_name ?? '?');
+          const raters = item.ratings.map((r) => ({ name: r.profiles?.display_name ?? '?', avatarUrl: r.profiles?.avatar_url ?? null }));
           return (
             <Pressable onPress={() => router.push(`/item/${item.id}`)} style={({ pressed }) => [s.card, pressed && { opacity: 0.92 }]}>
               <View style={[s.row, { alignItems: 'flex-start', gap: 10 }]}>
@@ -159,12 +159,12 @@ export default function GroupDetail() {
               {item.ratings.length > 0 && (
                 <View style={[s.row, { backgroundColor: colors.surfaceLow, borderRadius: 12, padding: 10, marginTop: 12, gap: 10 }]}>
                   <View style={{ flexDirection: 'row' }}>
-                    {names.slice(0, 2).map((n, i) => (
-                      <View key={i} style={{ marginLeft: i ? -8 : 0, borderWidth: 2, borderColor: colors.surfaceLow, borderRadius: 16 }}><Avatar name={n} size={28} /></View>
+                    {raters.slice(0, 2).map((rt, i) => (
+                      <View key={i} style={{ marginLeft: i ? -8 : 0, borderWidth: 2, borderColor: colors.surfaceLow, borderRadius: 16 }}><Avatar name={rt.name} uri={rt.avatarUrl} size={28} /></View>
                     ))}
-                    {names.length > 2 && (
+                    {raters.length > 2 && (
                       <View style={{ marginLeft: -8, width: 32, height: 32, borderRadius: 16, backgroundColor: colors.surfaceHigh, borderWidth: 2, borderColor: colors.surfaceLow, alignItems: 'center', justifyContent: 'center' }}>
-                        <Text style={[t.labelSm, { fontSize: 10 }]}>+{names.length - 2}</Text>
+                        <Text style={[t.labelSm, { fontSize: 10 }]}>+{raters.length - 2}</Text>
                       </View>
                     )}
                   </View>

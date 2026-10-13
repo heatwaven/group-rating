@@ -35,6 +35,7 @@ function Gate() {
       <Stack.Screen name="group/join" options={{ title: 'Mit Code beitreten' }} />
       <Stack.Screen name="group/[id]" options={{ title: 'Gruppe' }} />
       <Stack.Screen name="item/[id]" options={{ title: 'Eintrag' }} />
+      <Stack.Screen name="account/avatar" options={{ title: 'Profilbild ändern' }} />
     </Stack>
   );
 }

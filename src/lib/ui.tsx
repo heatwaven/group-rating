@@ -1,6 +1,6 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { ReactNode, useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, TextInputProps, View, ViewStyle } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, TextInput, TextInputProps, View, ViewStyle } from 'react-native';
 import type { Category } from './supabase';
 
 type IconName = keyof typeof MaterialIcons.glyphMap;
@@ -163,7 +163,10 @@ export function Chip({ label, icon, active, onPress }: { label: string; icon?: I
 }
 
 const AVATAR_COLORS = ['#fdcb9e', '#f6a88d', '#d0debb', '#f7dca3'];
-export function Avatar({ name, size = 40 }: { name: string; size?: number }) {
+export function Avatar({ name, size = 40, uri }: { name: string; size?: number; uri?: string | null }) {
+  if (uri) {
+    return <Image source={{ uri }} style={{ width: size, height: size, borderRadius: size / 2 }} />;
+  }
   const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase() || '?';
   const hash = [...name].reduce((a, c) => a + c.charCodeAt(0), 0);
   return (
