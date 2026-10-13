@@ -1,6 +1,6 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { ReactNode, useState } from 'react';
-import { Image, Pressable, StyleSheet, Text, TextInput, TextInputProps, View, ViewStyle } from 'react-native';
+import { Image, Pressable, StyleSheet, Switch, Text, TextInput, TextInputProps, View, ViewStyle } from 'react-native';
 import type { Category } from './supabase';
 
 type IconName = keyof typeof MaterialIcons.glyphMap;
@@ -172,6 +172,47 @@ export function Avatar({ name, size = 40, uri }: { name: string; size?: number; 
   return (
     <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: AVATAR_COLORS[hash % AVATAR_COLORS.length], alignItems: 'center', justifyContent: 'center' }}>
       <Text style={{ fontFamily: fonts.bold, fontSize: size * 0.36, color: colors.text }}>{initials}</Text>
+    </View>
+  );
+}
+
+export function ToggleRow({ label, description, value, onChange }: {
+  label: string; description?: string; value: boolean; onChange: (v: boolean) => void;
+}) {
+  return (
+    <View style={[s.row, { alignItems: 'flex-start', gap: 12, paddingVertical: 4 }]}>
+      <View style={{ flex: 1 }}>
+        <Text style={t.label}>{label}</Text>
+        {description ? <Text style={[t.small, { marginTop: 2 }]}>{description}</Text> : null}
+      </View>
+      <Switch
+        value={value}
+        onValueChange={onChange}
+        trackColor={{ false: colors.surfaceHigh, true: colors.primary }}
+        thumbColor={colors.card}
+      />
+    </View>
+  );
+}
+
+export function Stepper({ value, onChange, min = 1, max = 500 }: { value: number; onChange: (n: number) => void; min?: number; max?: number }) {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 28 }}>
+      <Pressable
+        onPress={() => onChange(Math.max(min, value - 1))}
+        disabled={value <= min}
+        style={[s.roundBtn, { width: 44, height: 44, borderRadius: 22 }, value <= min && { opacity: 0.4 }]}
+      >
+        <MaterialIcons name="remove" size={22} color={colors.text} />
+      </Pressable>
+      <Text style={[t.score, { minWidth: 56, textAlign: 'center' }]}>{value}</Text>
+      <Pressable
+        onPress={() => onChange(Math.min(max, value + 1))}
+        disabled={value >= max}
+        style={[s.roundBtn, { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary }, value >= max && { opacity: 0.4 }]}
+      >
+        <MaterialIcons name="add" size={22} color={colors.onPrimary} />
+      </Pressable>
     </View>
   );
 }

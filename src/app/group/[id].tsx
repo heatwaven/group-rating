@@ -18,6 +18,7 @@ export default function GroupDetail() {
   const navigation = useNavigation();
   const [group, setGroup] = useState<GroupWithCount | null>(null);
   const [isMember, setIsMember] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
   const [items, setItems] = useState<Row[]>([]);
   const [newName, setNewName] = useState('');
   const [sort, setSort] = useState<Sort>('best');
@@ -32,6 +33,7 @@ export default function GroupDetail() {
     ]);
     setGroup(g.data as GroupWithCount);
     setIsMember(!!m.data);
+    setIsOwner((g.data as GroupWithCount | null)?.owner_id === u.user!.id);
     setItems((i.data as unknown as Row[]) ?? []);
   }, [id]);
 
@@ -80,9 +82,16 @@ export default function GroupDetail() {
                 <Badge isPublic={group.is_public} />
                 <Pill icon="groups" label={`${members} ${members === 1 ? 'Mitglied' : 'Mitglieder'}`} />
               </View>
-              {isMember && (
-                <Pressable onPress={share} style={s.roundBtn}><MaterialIcons name="share" size={18} color={colors.text} /></Pressable>
-              )}
+              <View style={[s.row, { gap: 8 }]}>
+                {isMember && (group.allow_member_invite || isOwner) && (
+                  <Pressable onPress={share} style={s.roundBtn}><MaterialIcons name="share" size={18} color={colors.text} /></Pressable>
+                )}
+                {isOwner && (
+                  <Pressable onPress={() => router.push(`/group/settings/${id}`)} style={s.roundBtn}>
+                    <MaterialIcons name="settings" size={18} color={colors.text} />
+                  </Pressable>
+                )}
+              </View>
             </View>
 
             <View style={s.card}>
@@ -101,24 +110,36 @@ export default function GroupDetail() {
 
               {isMember ? (
                 <>
-                  <View style={{ backgroundColor: colors.surfaceLow, borderRadius: 14, padding: 12, marginTop: 12 }}>
-                    <View style={[s.row, { justifyContent: 'flex-start', gap: 6, marginBottom: 8 }]}>
-                      <MaterialIcons name="vpn-key" size={16} color={colors.primary} />
-                      <Text style={t.labelSm}>Einladungscode für Freunde</Text>
+                  {(group.allow_member_invite || isOwner) ? (
+                    <View style={{ backgroundColor: colors.surfaceLow, borderRadius: 14, padding: 12, marginTop: 12 }}>
+                      <View style={[s.row, { justifyContent: 'flex-start', gap: 6, marginBottom: 8 }]}>
+                        <MaterialIcons name="vpn-key" size={16} color={colors.primary} />
+                        <Text style={t.labelSm}>Einladungscode für Freunde</Text>
+                      </View>
+                      <View style={[s.row, { backgroundColor: colors.card, borderRadius: 12, paddingLeft: 14, paddingRight: 6, height: 52 }]}>
+                        <Text style={{ fontFamily: fonts.bold, fontSize: 18, letterSpacing: 2, color: colors.text }}>{group.invite_code.toUpperCase()}</Text>
+                        <Pressable onPress={copyCode} style={[s.btn, { height: 40, marginVertical: 0, paddingHorizontal: 12, borderRadius: 10 }]}>
+                          <MaterialIcons name={copied ? 'check' : 'content-copy'} size={16} color={colors.onPrimary} />
+                          <Text style={[t.labelSm, { color: colors.onPrimary }]}>{copied ? 'Kopiert' : 'Code kopieren'}</Text>
+                        </Pressable>
+                      </View>
                     </View>
-                    <View style={[s.row, { backgroundColor: colors.card, borderRadius: 12, paddingLeft: 14, paddingRight: 6, height: 52 }]}>
-                      <Text style={{ fontFamily: fonts.bold, fontSize: 18, letterSpacing: 2, color: colors.text }}>{group.invite_code.toUpperCase()}</Text>
-                      <Pressable onPress={copyCode} style={[s.btn, { height: 40, marginVertical: 0, paddingHorizontal: 12, borderRadius: 10 }]}>
-                        <MaterialIcons name={copied ? 'check' : 'content-copy'} size={16} color={colors.onPrimary} />
-                        <Text style={[t.labelSm, { color: colors.onPrimary }]}>{copied ? 'Kopiert' : 'Code kopieren'}</Text>
-                      </Pressable>
+                  ) : (
+                    <View style={[s.row, { justifyContent: 'flex-start', gap: 8, backgroundColor: colors.surfaceLow, borderRadius: 14, padding: 12, marginTop: 12 }]}>
+                      <MaterialIcons name="lock" size={16} color={colors.muted} />
+                      <Text style={t.small}>Nur die Admin-Person kann hier Mitglieder einladen.</Text>
                     </View>
-                  </View>
+                  )}
                   <Pressable onPress={leave} style={[s.row, { alignSelf: 'flex-end', gap: 4, marginTop: 12 }]}>
                     <MaterialIcons name="logout" size={16} color={colors.muted} />
                     <Text style={t.labelSm}>Gruppe verlassen</Text>
                   </Pressable>
                 </>
+              ) : group.max_members !== null && members >= group.max_members ? (
+                <View style={[s.row, { justifyContent: 'center', gap: 8, backgroundColor: colors.surfaceLow, borderRadius: 14, padding: 14, marginTop: 14 }]}>
+                  <MaterialIcons name="group-off" size={18} color={colors.muted} />
+                  <Text style={t.bodyMuted}>Diese Gruppe hat ihre maximale Mitgliederanzahl erreicht.</Text>
+                </View>
               ) : (
                 <Button icon="group-add" title="Gruppe beitreten" onPress={join} style={{ marginTop: 14 }} />
               )}
