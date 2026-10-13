@@ -68,7 +68,7 @@ export default function GroupDetail() {
   const members = memberCount(group);
 
   return (
-    <KeyboardAvoidingView style={s.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={100}>
+    <KeyboardAvoidingView style={s.screen} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}>
       <FlatList
         contentContainerStyle={s.content}
         data={sorted}

@@ -52,7 +52,7 @@ export default function ItemDetail() {
   const dist = [5, 4, 3, 2, 1].map((n) => ({ n, count: ratings.filter((r) => r.stars === n).length }));
 
   return (
-    <KeyboardAvoidingView style={s.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={100}>
+    <KeyboardAvoidingView style={s.screen} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}>
       <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
         <View style={s.card}>
           {item.groups && (

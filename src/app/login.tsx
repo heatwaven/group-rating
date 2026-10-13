@@ -21,7 +21,7 @@ export default function Login() {
   }
 
   return (
-    <KeyboardAvoidingView style={s.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView style={s.screen} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView contentContainerStyle={[s.content, { flexGrow: 1, justifyContent: 'center' }]} keyboardShouldPersistTaps="handled">
         <View style={{ alignItems: 'center', marginBottom: 24 }}>
           <IconCircle icon="groups" size={72} color={colors.onPrimary} bg={colors.primaryContainer} />
